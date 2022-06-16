@@ -23,3 +23,4 @@ Here is the place I will share my notebooks and codes from Digital House Data Sc
 ## 🔥 Challenges
 - [Challenge Zero - EDA](https://github.com/thiago-osorio/digital-house/blob/main/desafio_0/Desafio_0.ipynb)
 - [Challenge One - EDA](https://github.com/thiago-osorio/digital-house/blob/main/desafio_1/Desafio_1.ipynb)
+- [Challeng Two - Logistic and Linear Regression](https://github.com/thiago-osorio/digital-house/blob/main/desafio_2/Desafio_2.ipynb)
