@@ -26,3 +26,4 @@ Here is the place I will share my notebooks and codes from Digital House Data Sc
 - [Challenge Two - Logistic and Linear Regression](https://github.com/thiago-osorio/digital-house/blob/main/desafio_2/Desafio_2.ipynb)
 - [Challenge Three - Classification](https://github.com/thiago-osorio/digital-house/blob/main/desafio_3/Desafio_3.ipynb)
 - [Challenge Four - Clustering](https://github.com/thiago-osorio/digital-house/blob/main/desafio_4/Desafio_4.ipynb)
+- [Final Project - Time Series/Regression](https://github.com/thiago-osorio/digital-house/blob/main/projeto_integrador/Notebooks/modelagem.ipynb)
