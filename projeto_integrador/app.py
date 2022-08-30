@@ -70,44 +70,21 @@ def obter_fator_sazonal(month):
     filtered_df = sazonal.loc[sazonal['mes']== mes]
     filtered_df.drop_duplicates(subset='mes', keep='last', inplace=True)
     return filtered_df['seasonal'].values[0]
-def obter_features(month, porto_alegre, vendas_lag6):
-    if month == 'Fevereiro':
-        fevereiro = 1
-        maio = 0
-        dezembro = 0
-    elif month == 'Maio':
-        fevereiro = 0
-        maio = 1
-        dezembro = 0
-    elif month == 'Dezembro':
-        fevereiro = 0
-        maio = 0
-        dezembro = 1
-    else:
-        fevereiro = 0
-        maio = 0
-        dezembro = 0
+def obter_features(month, usp, sao_carlos, vendas_lag8):
     sazonal = obter_fator_sazonal(month)
     json = {
-        'mes_February': fevereiro,
-        'mes_May': maio,
-        'mes_December': dezembro,
-        'vendas_Porto_Alegre_LAG_1': porto_alegre,
-        'vendas_LAG_6': vendas_lag6,
+        'vendas_USP_LAG_5': usp,
+        'vendas_Sao_Carlos_LAG_5': sao_carlos,
+        'vendas_LAG_8': vendas_lag8,
         'seasonal_LAG_12': sazonal
     }
     df = pd.DataFrame([json])
-    ordem = ['vendas_Porto_Alegre_LAG_1', 'vendas_LAG_6', 'seasonal_LAG_12', 'mes_December', 'mes_February', 'mes_May']
+    ordem = ['vendas_USP_LAG_5', 'vendas_Sao_Carlos_LAG_5', 'vendas_LAG_8', 'seasonal_LAG_12']
     df = df[ordem]
     return df
-def obter_mes(coluna, month):
-    if coluna.upper() == month.upper():
-        return 1
-    else:
-        return 0
 
 modelo = pickle.load(open('Modelos/pipeline.pkl', 'rb'))
-erro_modelo = 0.1738
+erro_modelo = 0.2964
 
 st.set_page_config(
     page_title='Previsão Demanda', 
@@ -118,36 +95,37 @@ st.image(Image.open('cover.png'))
 st.title('Previsão de Vendas')
 
 modo = st.radio(
-    'Escolha qual previsão deseja realizar', 
+    'Escolha o tipo de previsão que deseja realizar', 
     ['Previsão de um único mês', 'Previsão de vários meses'])
 
 if modo == 'Previsão de um único mês':
     st.markdown('---')
     st.header('Previsão Única de Venda')
     st.markdown(' ')
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         mes = st.selectbox(
             'Mês da Previsão', 
             ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'])
     with col2:
-        month_1 = obter_month_name(subtrair_mes(obter_month_number(mes),1))
-        porto_alegre = st.slider(
-            f'Vendas Porto Alegre - {month_1} (M-1)', 
+        month_5 = obter_month_name(subtrair_mes(obter_month_number(mes),5))
+        sao_carlos = st.slider(
+            f'Vendas São Carlos - {month_5} (M-5)', 
+            0, 
+            200)
+    with col3:
+        vendas_usp = st.slider(
+            f'Vendas USP - {month_5} (M-5)', 
             0, 
             500)
-    with col3:
-        month_6 = obter_month_name(subtrair_mes(obter_month_number(mes),6))
-        vendas_lag6 = st.slider(
-            f'Vendas Totais - {month_6} (M-6)', 
-            0, 
-            15000, 
-            step=1)
+    with col4:
+        month_8 = obter_month_name(subtrair_mes(obter_month_number(mes),8))
+        vendas_lag8 = st.number_input(f'Vendas Totais - {month_8} (M-8)', min_value=0, format='%i')
 
     if st.button('Gerar previsão'):
         col1, col2, col3 = st.columns(3)
         with col2:
-            df = obter_features(mes, porto_alegre, vendas_lag6)
+            df = obter_features(mes, vendas_usp, sao_carlos, vendas_lag8)
             predicao = modelo.predict(df)
             predicao_md_text = f'''
             <p style="https://fonts.googleapis.com/css?family=Source+Sans+Pro; font-size: 20px; line-height: 20px; text-align: center;"><b>Previsão de vendas</b></p>
@@ -160,16 +138,17 @@ if modo == 'Previsão de um único mês':
 else:
     st.markdown('---')
     with st.expander('Caso não possua o template em CSV, baixe-o aqui'):
-        with open('Dados/exemplo.csv', 'rb') as file:
+        with open('Dados/exemplo.xlsx', 'rb') as file:
             btn = st.download_button(
                 label='Baixar',
                 data=file,
-                file_name='exemplo.csv'
+                file_name='exemplo.xlsx'
                 )
             md_text = '''<p style="https://fonts.googleapis.com/css?family=Source+Sans+Pro; font-size: 15px;"><b>Dados necessários:</b><br>
             <ul>
             <li><u>Mês desejado</u> - Meses que você deseja prever (Ex: Janeiro, Feveiro, etc)</li>
-            <li><u>Vendas Porto Alegre Mês Anterior</u> - Vendas na cidade de Porto Alegre no mês anterior (M-1) ao que se deseja prever</li>
+            <li><u>Vendas São Carlos Cinco Meses Antes</u> - Vendas na cidade de São Carlos cinco meses antes (M-5) ao que se deseja prever</li>
+            <li><u>Vendas USP Cinco Meses Antes</u> - Vendas na USP cinco meses antes (M-5) ao que se deseja prever</li>
             <li><u>Vendas Total Seis Meses Antes</u> - Vendas total (em todas as cidades) seis meses antes (M-6) ao que se deseja prever</li>
             </ul>
             </p>'''
@@ -178,42 +157,36 @@ else:
                 md_text, 
                 unsafe_allow_html=True)
     
-    # md_text = '<p style="https://fonts.googleapis.com/css?family=Source+Sans+Pro; font-size: 20px;">Agora é hora de gerar as previsões</p>'
-    # st.markdown(
-    #     md_text, 
-    #     unsafe_allow_html=True)
-    
     data = st.file_uploader(
-        label='Carregue o arquivo CSV com os dados preenchidos',
-        type='csv'
+        label='Carregue o arquivo Excel com os dados preenchidos',
+        type='xlsx'
     )
 
     if data is not None:
-        df = pd.read_csv(data, sep=';', encoding='utf8')
-        df['mes_February'] = df['mes_desejado'].map(lambda x: obter_mes(x, 'fevereiro'))
-        df['mes_May'] = df['mes_desejado'].map(lambda x: obter_mes(x, 'maio'))
-        df['mes_December'] = df['mes_desejado'].map(lambda x: obter_mes(x, 'dezembro'))
+        df = pd.read_excel(data)
         df['seasonal_LAG_12'] = df['mes_desejado'].apply(obter_fator_sazonal)
         
-        #df_download = df[['mes_desejado']].copy()
-        #df_download.rename(columns={'mes_desejado':'Mês'}, inplace=True)
-        
-        #df.drop('mes_desejado', axis=1, inplace=True)
         df.rename(columns={
             'mes_desejado': 'Mês',
-            'vendas_porto_alegre_mes_anterior': 'vendas_Porto_Alegre_LAG_1',
-            'vendas_total_seis_meses_antes': 'vendas_LAG_6'
+            'vendas_usp_cinco_meses_antes': 'vendas_USP_LAG_5',
+            'vendas_sao_carlos_cinco_meses_antes': 'vendas_Sao_Carlos_LAG_5',
+            'vendas_total_oito_meses_antes': 'vendas_LAG_8'
         }, inplace=True)
         
-        ordem = ['vendas_Porto_Alegre_LAG_1', 'vendas_LAG_6', 'seasonal_LAG_12', 'mes_December', 'mes_February', 'mes_May']
-        #df = df[ordem]
+        ordem = ['vendas_USP_LAG_5', 'vendas_Sao_Carlos_LAG_5', 'vendas_LAG_8', 'seasonal_LAG_12']
         
         X = df[ordem]
         X.fillna(0, inplace=True)
         pred = modelo.predict(X)
         df = df[['Mês']]
         df['Vendas'] = pred
+        df['Min'] = pred*(1-erro_modelo)
+        df['Max'] = pred*(1+erro_modelo)
         df['Vendas'] = round(df['Vendas'],0).astype('int')
+        df['Min'] = round(df['Min'],0).astype('int')
+        df['Max'] = round(df['Max'],0).astype('int')
+        ordem = ['Mês', 'Min', 'Vendas', 'Max']
+        df = df[ordem]
         df.to_excel('Previsoes/pred.xlsx', index=None)
         with open('Previsoes/pred.xlsx',  'rb') as previsao:
             botao_download = st.download_button(
@@ -221,6 +194,10 @@ else:
                 data=previsao,
                 file_name='previsoes.xlsx'
             )
-        fig = go.Figure(data=go.Scatter(x=df['Mês'], y=df['Vendas'], marker={'color': 'gray'}))
+        fig = go.Figure(data=[
+            go.Scatter(x=df['Mês'], y=df['Min'], marker={'color': 'gray'}, name='Mínimo'),
+            go.Scatter(x=df['Mês'], y=df['Vendas'], marker={'color': 'blue'}, name='Previsão'),
+            go.Scatter(x=df['Mês'], y=df['Max'], marker={'color': 'gray'}, name='Máximo')
+            ])
         fig.update_layout(font=dict(color='black'), title_text='Gráfico da Previsão')
         st.plotly_chart(fig, use_container_width=True)
