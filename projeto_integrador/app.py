@@ -115,7 +115,7 @@ st.set_page_config(
     page_icon=":chart:")
 
 st.image(Image.open('cover.png'))
-st.title('Previsão da Demanda de Vendas')
+st.title('Previsão de Vendas')
 
 modo = st.radio(
     'Escolha qual previsão deseja realizar', 
