@@ -137,7 +137,7 @@ if modo == 'Previsão de um único mês':
                 unsafe_allow_html=True)
 else:
     st.markdown('---')
-    with st.expander('Caso não possua o template em CSV, baixe-o aqui'):
+    with st.expander('Caso não possua o template em Excel, baixe-o aqui'):
         with open('Dados/exemplo.xlsx', 'rb') as file:
             btn = st.download_button(
                 label='Baixar',
