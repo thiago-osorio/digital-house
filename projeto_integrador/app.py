@@ -45,7 +45,7 @@ def obter_features(month, year):
     df = pd.DataFrame([json])
     return df
 
-modelo = pickle.load(open('/projeto_integrador/Modelos/prophet.pkl', 'rb')) 
+modelo = pickle.load(open('projeto_integrador/Modelos/prophet.pkl', 'rb')) 
 
 st.set_page_config(
     page_title='Previsão Demanda', 
@@ -89,7 +89,7 @@ if modo == 'Previsão de um único mês':
 else:
     st.markdown('---')
     with st.expander('Caso não possua o template em Excel, baixe-o aqui'):
-        with open('/projeto_integrador/Dados/exemplo.xlsx', 'rb') as file:
+        with open('projeto_integrador/Dados/exemplo.xlsx', 'rb') as file:
             btn = st.download_button(
                 label='Baixar',
                 data=file,
@@ -123,8 +123,8 @@ else:
         df.rename(columns={'ds': 'Data'}, inplace=True)
         ordem = ['Data', 'Min', 'Vendas', 'Max']
         df = df[ordem]
-        df.to_excel('/projeto_integrador/Previsoes/pred.xlsx', index=None)
-        with open('/projeto_integrador/Previsoes/pred.xlsx',  'rb') as previsao:
+        df.to_excel('projeto_integrador/Previsoes/pred.xlsx', index=None)
+        with open('projeto_integrador/Previsoes/pred.xlsx',  'rb') as previsao:
             botao_download = st.download_button(
                 label='Baixar Previsões',
                 data=previsao,
