@@ -52,7 +52,7 @@ st.set_page_config(
     layout="wide", 
     page_icon=":chart:")
 
-st.image(Image.open('cover.png'))
+st.image(Image.open('projeto_integrador/cover.png'))
 st.title('Previsão de Vendas')
 
 modo = st.radio(
